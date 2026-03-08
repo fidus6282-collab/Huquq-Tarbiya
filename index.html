@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚖️ Huquqbuzarlik Tizimi PRO</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #c9a84c;
+  --gold-l: #f0d080;
+  --gold-d: #8a6820;
+  --deep: #060910;
+  --navy: #0a1020;
+  --card: rgba(255,255,255,0.035);
+  --border: rgba(201,168,76,0.2);
+  --text: #e0d8c8;
+  --muted: #7a7060;
+  --red: #c0392b;
+  --orange: #d35400;
+  --yellow: #b7950b;
+  --purple: #6c3483;
+  --green: #1a7a4a;
+  --blue: #1a4a8a;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+
+html{scroll-behavior:smooth;}
+
+body{
+  background: var(--deep);
+  color: var(--text);
+  font-family: 'Crimson Pro', Georgia, serif;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ===== ANIMATED BG ===== */
+.bg-layer{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 10%, rgba(201,168,76,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 70% at 90% 90%, rgba(10,20,40,0.9) 0%, transparent 60%);
+}
+.bg-grid{
+  position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridMove 20s linear infinite;
+}
+@keyframes gridMove{
+  0%{background-position:0 0;}
+  100%{background-position:60px 60px;}
+}
+
+/* ===== NOTIFICATION SYSTEM ===== */
+#notif-container{
+  position:fixed;top:20px;right:20px;z-index:9999;
+  display:flex;flex-direction:column;gap:10px;
+  max-width:340px;
+  pointer-events:none;
+}
+.notif{
+  background: rgba(10,14,26,0.97);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:14px 16px;
+  display:flex;align-items:flex-start;gap:12px;
+  pointer-events:all;
+  transform:translateX(380px);
+  transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+  box-shadow:0 8px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(201,168,76,0.1);
+  backdrop-filter:blur(20px);
+}
+.notif.show{transform:translateX(0);}
+.notif.hide{transform:translateX(380px);opacity:0;}
+.notif-icon{font-size:22px;flex-shrink:0;margin-top:1px;}
+.notif-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold-l);font-weight:700;margin-bottom:4px;}
+.notif-msg{font-size:12.5px;color:#c0b8a8;line-height:1.5;}
+.notif-bar{
+  position:absolute;bottom:0;left:0;height:2px;
+  background:var(--gold);border-radius:0 0 12px 12px;
+  animation:notifBar 4s linear forwards;
+}
+.notif{position:relative;overflow:hidden;}
+@keyframes notifBar{from{width:100%;}to{width:0;}}
+.notif-close{
+  margin-left:auto;background:none;border:none;color:var(--muted);
+  cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0;
+  transition:color 0.2s;
+}
+.notif-close:hover{color:var(--gold);}
+
+/* notif types */
+.notif.danger{border-color:rgba(192,57,43,0.5);}
+.notif.danger .notif-bar{background:var(--red);}
+.notif.warning{border-color:rgba(183,149,11,0.5);}
+.notif.warning .notif-bar{background:var(--yellow);}
+.notif.success{border-color:rgba(26,122,74,0.5);}
+.notif.success .notif-bar{background:var(--green);}
+.notif.info{border-color:rgba(26,74,138,0.5);}
+.notif.info .notif-bar{background:var(--blue);}
+
+/* ===== MODAL ===== */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:5000;
+  display:flex;align-items:center;justify-content:center;padding:20px;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;
+  backdrop-filter:blur(8px);
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal{
+  background: linear-gradient(135deg, #0d1525 0%, #0a0e1a 100%);
+  border:1px solid var(--border);
+  border-radius:20px;
+  max-width:560px;width:100%;
+  max-height:90vh;overflow-y:auto;
+  transform:scale(0.85) translateY(30px);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow:0 30px 100px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.15), 0 0 60px rgba(201,168,76,0.05);
+}
+.modal-overlay.open .modal{transform:scale(1) translateY(0);}
+.modal-header{
+  padding:28px 28px 0;
+  display:flex;align-items:center;gap:16px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:20px;
+  margin-bottom:0;
+}
+.modal-header-icon{
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(192,57,43,0.3),rgba(192,57,43,0.1));
+  border:2px solid rgba(192,57,43,0.5);
+  display:flex;align-items:center;justify-content:center;font-size:26px;
+  animation:modalPulse 2s ease-in-out infinite;
+}
+@keyframes modalPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(192,57,43,0.3);}
+  50%{box-shadow:0 0 0 10px rgba(192,57,43,0);}
+}
+.modal-title{
+  font-family:'Cinzel',serif;font-size:18px;color:var(--gold-l);font-weight:900;
+}
+.modal-subtitle{font-size:13px;color:var(--muted);margin-top:4px;}
+.modal-body{padding:24px 28px;}
+.modal-close-btn{
+  margin-left:auto;background:none;border:1px solid var(--border);
+  border-radius:8px;color:var(--muted);cursor:pointer;
+  padding:6px 12px;font-size:12px;transition:all 0.2s;
+  font-family:'Crimson Pro',serif;
+}
+.modal-close-btn:hover{color:var(--gold);border-color:var(--gold);}
+
+/* Contact card */
+.contact-card{
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:20px;
+  margin-bottom:16px;
+  transition:all 0.3s;
+}
+.contact-card:hover{
+  background:rgba(201,168,76,0.05);
+  border-color:rgba(201,168,76,0.4);
+  transform:translateY(-2px);
+  box-shadow:0 8px 30px rgba(0,0,0,0.3);
+}
+.contact-role{
+  font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;
+  font-weight:600;margin-bottom:8px;
+}
+.contact-name{
+  font-family:'Cinzel',serif;font-size:16px;color:var(--gold-l);font-weight:700;
+  margin-bottom:6px;
+}
+.contact-detail{
+  display:flex;align-items:center;gap:8px;
+  font-size:13.5px;color:#c8c0b0;margin-bottom:4px;
+}
+.contact-detail a{
+  color:var(--gold);text-decoration:none;
+  border-bottom:1px dotted rgba(201,168,76,0.4);
+  transition:all 0.2s;
+}
+.contact-detail a:hover{color:var(--gold-l);border-color:var(--gold);}
+
+.call-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  width:100%;padding:12px;margin-top:12px;
+  background:linear-gradient(135deg,rgba(26,122,74,0.3),rgba(26,122,74,0.15));
+  border:1px solid rgba(26,122,74,0.5);
+  border-radius:10px;color:#5de8a0;
+  cursor:pointer;font-family:'Crimson Pro',serif;font-size:14px;
+  transition:all 0.3s;text-decoration:none;
+}
+.call-btn:hover{
+  background:linear-gradient(135deg,rgba(26,122,74,0.5),rgba(26,122,74,0.3));
+  transform:scale(1.02);
+  box-shadow:0 4px 20px rgba(26,122,74,0.3);
+}
+
+/* Prison timer */
+.prison-display{
+  background:linear-gradient(135deg,rgba(192,57,43,0.15),rgba(10,14,26,0.9));
+  border:1px solid rgba(192,57,43,0.4);
+  border-radius:14px;
+  padding:20px;
+  text-align:center;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+.prison-display::before{
+  content:'🔒';
+  position:absolute;right:-10px;bottom:-10px;
+  font-size:80px;opacity:0.06;
+}
+.prison-years{
+  font-family:'Cinzel',serif;
+  font-size:48px;font-weight:900;
+  color:#e74c3c;
+  text-shadow:0 0 30px rgba(231,76,60,0.5);
+  line-height:1;
+}
+.prison-unit{font-size:14px;color:var(--muted);margin-top:6px;letter-spacing:2px;}
+.prison-range{font-size:13px;color:#c0b8a8;margin-top:8px;}
+
+/* Severity meter */
+.severity-bar{
+  height:8px;background:rgba(255,255,255,0.08);
+  border-radius:99px;overflow:hidden;margin:10px 0 4px;
+}
+.severity-fill{
+  height:100%;border-radius:99px;
+  transition:width 1s cubic-bezier(0.34,1.56,0.64,1);
+  background:linear-gradient(90deg, var(--s-from), var(--s-to));
+}
+.severity-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);}
+
+/* ===== MAIN LAYOUT ===== */
+.container{max-width:900px;margin:0 auto;padding:40px 20px 80px;position:relative;z-index:1;}
+
+/* Header */
+.header{text-align:center;margin-bottom:50px;animation:fadeDown 0.8s ease both;}
+.emblem-ring{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:90px;height:90px;border-radius:50%;margin-bottom:20px;
+  background:radial-gradient(circle at 30% 30%, rgba(201,168,76,0.2), rgba(201,168,76,0.03));
+  border:2px solid var(--gold);
+  position:relative;
+  animation:rotateBorder 8s linear infinite;
+}
+.emblem-ring::before{
+  content:'';position:absolute;inset:-6px;border-radius:50%;
+  border:1px dashed rgba(201,168,76,0.25);
+  animation:rotateBorder 12s linear reverse infinite;
+}
+@keyframes rotateBorder{
+  0%{box-shadow:0 0 20px rgba(201,168,76,0.15), 0 0 0 0 rgba(201,168,76,0.1);}
+  50%{box-shadow:0 0 50px rgba(201,168,76,0.3), 0 0 60px rgba(201,168,76,0.05);}
+  100%{box-shadow:0 0 20px rgba(201,168,76,0.15), 0 0 0 0 rgba(201,168,76,0.1);}
+}
+.emblem-icon{font-size:40px;position:relative;}
+.main-title{
+  font-family:'Cinzel',serif;
+  font-size:clamp(20px,4vw,36px);
+  color:var(--gold-l);font-weight:900;
+  letter-spacing:2px;line-height:1.2;
+  text-shadow:0 0 40px rgba(201,168,76,0.2);
+}
+.main-sub{font-size:12px;color:var(--muted);margin-top:10px;letter-spacing:3px;text-transform:uppercase;}
+
+/* Stats bar */
+.stats-bar{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+  margin-bottom:36px;animation:fadeUp 0.8s 0.1s ease both;
+}
+.stat-card{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:16px;text-align:center;
+  transition:all 0.3s;cursor:default;
+}
+.stat-card:hover{background:rgba(201,168,76,0.06);border-color:rgba(201,168,76,0.4);}
+.stat-num{font-family:'Cinzel',serif;font-size:22px;color:var(--gold-l);font-weight:700;}
+.stat-lbl{font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:4px;}
+
+/* Vaziyat */
+.vaziyat{
+  background:rgba(201,168,76,0.05);
+  border:1px solid var(--border);border-left:3px solid var(--gold);
+  border-radius:12px;padding:22px 26px;margin-bottom:36px;
+  font-size:15px;line-height:1.8;color:#d0c8b8;
+  animation:fadeUp 0.8s 0.2s ease both;
+  position:relative;overflow:hidden;
+}
+.vaziyat::after{
+  content:'"';position:absolute;right:16px;bottom:-20px;
+  font-size:120px;color:rgba(201,168,76,0.04);font-family:'Cinzel',serif;
+}
+.vaziyat-lbl{
+  font-size:10px;color:var(--gold);letter-spacing:2px;
+  text-transform:uppercase;font-weight:600;margin-bottom:10px;
+  font-family:'Cinzel',serif;
+}
+
+/* Divider */
+.divider{display:flex;align-items:center;gap:14px;margin:28px 0;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);}
+.divider-txt{color:var(--gold);font-size:12px;white-space:nowrap;letter-spacing:1px;font-family:'Cinzel',serif;}
+
+/* Section */
+.section-h{
+  font-family:'Cinzel',serif;font-size:14px;color:var(--gold-l);
+  margin-bottom:16px;display:flex;align-items:center;gap:12px;
+  letter-spacing:1px;
+}
+.section-h::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+
+/* Violation cards */
+.v-grid{display:grid;gap:10px;margin-bottom:32px;animation:fadeUp 0.8s 0.35s ease both;}
+.v-card{
+  display:flex;align-items:center;gap:14px;
+  padding:16px 18px;
+  background:var(--card);
+  border:1px solid rgba(255,255,255,0.07);
+  border-radius:12px;cursor:pointer;
+  transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  text-align:left;color:var(--text);
+  font-family:'Crimson Pro',serif;font-size:14.5px;
+  position:relative;overflow:hidden;
+}
+.v-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:0;
+  background:var(--vc, rgba(201,168,76,0.12));
+  transition:width 0.4s ease;
+}
+.v-card:hover{transform:translateX(8px);border-color:var(--vc, var(--gold));}
+.v-card:hover::before{width:4px;}
+.v-card.active{
+  transform:translateX(10px);
+  border-color:var(--vc, var(--gold));
+  background:rgba(255,255,255,0.02);
+  box-shadow:-5px 0 30px rgba(201,168,76,0.1), 0 8px 30px rgba(0,0,0,0.4);
+}
+.v-card.active::before{width:4px;}
+.v-emoji{
+  width:42px;height:42px;border-radius:50%;
+  background:var(--vc, var(--gold));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 4px 15px rgba(0,0,0,0.3);
+}
+.v-info{flex:1;}
+.v-name{font-size:15px;font-weight:600;margin-bottom:3px;}
+.v-sub{font-size:12px;color:var(--muted);}
+.v-severity{display:flex;align-items:center;gap:6px;margin-left:auto;flex-shrink:0;}
+.severity-dots{display:flex;gap:3px;}
+.dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);}
+.dot.on{background:var(--vc, var(--gold));}
+.v-check{color:var(--gold-l);font-size:20px;margin-left:8px;animation:checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1) both;}
+@keyframes checkPop{from{transform:scale(0);}to{transform:scale(1);}}
+
+/* Result panel */
+#resultWrap{display:none;animation:slideUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;}
+#resultWrap.show{display:block;}
+@keyframes slideUp{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:translateY(0);}}
+
+/* Result top */
+.r-top{
+  display:flex;align-items:center;gap:16px;
+  padding:22px 24px;
+  border:1px solid var(--r-color, var(--gold));
+  border-bottom:none;border-radius:16px 16px 0 0;
+  background:rgba(255,255,255,0.02);
+  position:relative;overflow:hidden;
+}
+.r-top::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 0% 50%, var(--r-color, rgba(201,168,76,0.1)) 0%, transparent 60%);
+  opacity:0.3;
+}
+.r-icon{
+  width:52px;height:52px;border-radius:50%;
+  background:var(--r-color, var(--gold));
+  display:flex;align-items:center;justify-content:center;font-size:24px;
+  flex-shrink:0;position:relative;
+}
+.r-title{font-family:'Cinzel',serif;font-size:18px;font-weight:900;position:relative;}
+.r-tag{font-size:12px;color:var(--muted);margin-top:4px;position:relative;}
+
+/* Info grid */
+.info-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--r-color, var(--gold));border-top:none;
+}
+@media(max-width:600px){.info-grid{grid-template-columns:1fr;}}
+.info-cell{background:var(--deep);padding:18px 22px;}
+.info-cell-full{background:var(--deep);padding:18px 22px;grid-column:1/-1;}
+.i-lbl{font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.i-val{font-family:'Cinzel',serif;font-size:15px;color:var(--gold-l);font-weight:700;margin-bottom:6px;}
+.i-sub{font-size:13px;color:#c0b8a8;line-height:1.6;font-style:italic;}
+
+/* Jarima/qamoq row */
+.penalty-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:rgba(255,255,255,0.05);
+  border:1px solid var(--r-color,var(--gold));border-top:none;
+}
+@media(max-width:600px){.penalty-row{grid-template-columns:1fr;}}
+.jarima-cell{
+  background:rgba(201,168,76,0.06);padding:20px 22px;
+}
+.qamoq-cell{
+  background:rgba(192,57,43,0.07);padding:20px 22px;
+  border-left:1px solid rgba(255,255,255,0.05);
+}
+@media(max-width:600px){.qamoq-cell{border-left:none;border-top:1px solid rgba(255,255,255,0.05);}}
+.penalty-amount{
+  font-family:'Cinzel',serif;font-size:26px;font-weight:900;
+  color:var(--gold-l);text-shadow:0 0 20px rgba(201,168,76,0.3);
+  margin-bottom:4px;
+}
+.qamoq-amount{
+  font-family:'Cinzel',serif;font-size:26px;font-weight:900;
+  color:#e74c3c;text-shadow:0 0 20px rgba(231,76,60,0.3);
+  margin-bottom:4px;
+}
+
+/* PEE */
+.pee-section{
+  background:rgba(13,27,53,0.6);
+  border:1px solid var(--r-color,var(--gold));border-top:none;
+  padding:22px 24px;
+}
+.pee-lbl{font-family:'Cinzel',serif;font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:14px;}
+.pee-row{display:flex;gap:14px;margin-bottom:12px;font-size:14px;line-height:1.65;color:#c0b8a8;align-items:flex-start;}
+.pee-key{
+  font-family:'Cinzel',serif;font-weight:900;font-size:20px;
+  color:var(--gold-l);width:22px;flex-shrink:0;margin-top:-2px;
+}
+
+/* Action buttons */
+.action-row{
+  display:flex;gap:10px;flex-wrap:wrap;
+  border:1px solid var(--r-color,var(--gold));border-top:none;
+  border-radius:0 0 16px 16px;
+  padding:18px 22px;background:rgba(255,255,255,0.01);
+}
+.act-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:10px;cursor:pointer;
+  font-family:'Crimson Pro',serif;font-size:14px;
+  transition:all 0.3s;border:1px solid;
+}
+.act-btn-primary{
+  background:linear-gradient(135deg,rgba(192,57,43,0.3),rgba(192,57,43,0.15));
+  border-color:rgba(192,57,43,0.6);color:#ff8070;
+}
+.act-btn-primary:hover{
+  background:linear-gradient(135deg,rgba(192,57,43,0.5),rgba(192,57,43,0.3));
+  transform:translateY(-2px);box-shadow:0 6px 20px rgba(192,57,43,0.3);
+}
+.act-btn-secondary{
+  background:rgba(255,255,255,0.04);
+  border-color:var(--border);color:var(--muted);
+}
+.act-btn-secondary:hover{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.05);}
+.act-btn-ghost{
+  background:linear-gradient(135deg,rgba(26,74,138,0.3),rgba(26,74,138,0.1));
+  border-color:rgba(26,74,138,0.5);color:#70a0e0;margin-left:auto;
+}
+.act-btn-ghost:hover{
+  background:linear-gradient(135deg,rgba(26,74,138,0.5),rgba(26,74,138,0.25));
+  transform:translateY(-2px);box-shadow:0 6px 20px rgba(26,74,138,0.3);
+}
+
+/* Law articles reference */
+.law-refs{
+  border:1px solid var(--r-color,var(--gold));border-top:none;
+  background:rgba(5,8,15,0.8);padding:18px 22px;
+}
+.law-tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.law-tag{
+  padding:5px 12px;border-radius:6px;font-size:12px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  color:var(--gold);cursor:default;transition:all 0.2s;
+}
+.law-tag:hover{background:rgba(201,168,76,0.1);transform:scale(1.05);}
+
+/* Timeline */
+.timeline{padding:0;list-style:none;position:relative;margin:0 0 0 8px;}
+.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:linear-gradient(180deg,var(--gold),transparent);}
+.tl-item{position:relative;padding:0 0 18px 28px;}
+.tl-dot{
+  position:absolute;left:3px;top:4px;width:12px;height:12px;border-radius:50%;
+  background:var(--gold);border:2px solid var(--deep);
+  box-shadow:0 0 8px rgba(201,168,76,0.4);
+}
+.tl-title{font-family:'Cinzel',serif;font-size:13px;color:var(--gold-l);margin-bottom:4px;}
+.tl-text{font-size:13px;color:#a0988a;line-height:1.5;}
+
+/* Progress tracker */
+.progress-steps{
+  display:flex;gap:0;margin-bottom:32px;
+  animation:fadeUp 0.8s 0.05s ease both;
+}
+.step{
+  flex:1;text-align:center;position:relative;
+  padding:12px 4px;
+}
+.step::before{
+  content:'';position:absolute;top:19px;right:0;left:50%;height:2px;
+  background:rgba(255,255,255,0.08);z-index:0;
+}
+.step:last-child::before{display:none;}
+.step-circle{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.05);border:2px solid rgba(255,255,255,0.1);
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:14px;margin-bottom:6px;
+  transition:all 0.4s;position:relative;z-index:1;
+}
+.step.done .step-circle{
+  background:rgba(201,168,76,0.2);border-color:var(--gold);
+  box-shadow:0 0 15px rgba(201,168,76,0.2);
+}
+.step.active .step-circle{
+  background:rgba(201,168,76,0.3);border-color:var(--gold-l);
+  box-shadow:0 0 25px rgba(201,168,76,0.3);
+  animation:stepPulse 1.5s ease-in-out infinite;
+}
+@keyframes stepPulse{
+  0%,100%{box-shadow:0 0 15px rgba(201,168,76,0.2);}
+  50%{box-shadow:0 0 30px rgba(201,168,76,0.5);}
+}
+.step-lbl{font-size:10px;color:var(--muted);letter-spacing:0.5px;}
+.step.done .step-lbl, .step.active .step-lbl{color:var(--gold);}
+
+/* Footer */
+.footer{
+  text-align:center;margin-top:60px;padding-top:30px;
+  border-top:1px solid var(--border);
+  font-size:12px;color:var(--muted);letter-spacing:1px;
+  animation:fadeUp 0.8s 0.5s ease both;
+}
+
+/* Animations */
+@keyframes fadeDown{from{opacity:0;transform:translateY(-25px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(25px);}to{opacity:1;transform:translateY(0);}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--deep);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* Responsive */
+@media(max-width:500px){
+  .stats-bar{grid-template-columns:1fr 1fr 1fr;}
+  .stat-num{font-size:16px;}
+  .main-title{font-size:20px;}
+  .action-row{flex-direction:column;}
+  .act-btn-ghost{margin-left:0;}
+}
+</style>
+</head>
+<body>
+
+<!-- BG -->
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<!-- NOTIFICATION CONTAINER -->
+<div id="notif-container"></div>
+
+<!-- OTA-ONA MODAL -->
+<div class="modal-overlay" id="otaOnaModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-icon">📞</div>
+      <div>
+        <div class="modal-title">Ota-Onaga Murojaat</div>
+        <div class="modal-subtitle" id="modalSubtitle">Huquqbuzar ota-onasiga darhol xabar bering</div>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()">✕ Yopish</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Severity -->
+      <div style="margin-bottom:20px;">
+        <div class="i-lbl">🔴 Og'irlik darajasi</div>
+        <div class="severity-bar"><div class="severity-fill" id="modalSeverityFill" style="--s-from:#c0392b;--s-to:#e74c3c;width:0%"></div></div>
+        <div class="severity-labels"><span>Engil</span><span id="modalSeverityText"></span><span>Juda Og'ir</span></div>
+      </div>
+
+      <!-- Prison display -->
+      <div class="prison-display" id="modalPrison">
+        <div class="i-lbl" style="color:rgba(231,76,60,0.7);margin-bottom:12px;">⛓️ QAMOQ MUDDATI</div>
+        <div class="prison-years" id="prisonYears">0</div>
+        <div class="prison-unit">YIL QAMOQ</div>
+        <div class="prison-range" id="prisonRange"></div>
+      </div>
+
+      <!-- Contacts -->
+      <div class="i-lbl" style="margin-bottom:12px;">👨‍👩‍👦 BOG'LANISH UCHUN MA'SULLAR</div>
+
+      <div class="contact-card" id="parentContact">
+        <div class="contact-role">👨‍👩‍👦 Ota-Ona / Qonuniy Vakil</div>
+        <div class="contact-name" id="parentName">Azizov Baxtiyor Karimovich</div>
+        <div class="contact-detail">📱 <a href="tel:+998901234567" id="parentPhone">+998 90 123-45-67</a></div>
+        <div class="contact-detail">🏠 <span id="parentAddr">Toshkent sh., Chilonzor t., 12-uy</span></div>
+        <a class="call-btn" href="tel:+998901234567" id="parentCallLink">
+          📞 Qo'ng'iroq qilish — Ota-Ona
+        </a>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-role">👮 Maktab Ma'muriyati</div>
+        <div class="contact-name">Direktor: Rahimov Saidakbar Nematovich</div>
+        <div class="contact-detail">📱 <a href="tel:+998712345678">+998 71 234-56-78</a></div>
+        <div class="contact-detail">🏫 <span>8-sinf BSB-2, 142-maktab, Toshkent</span></div>
+        <a class="call-btn" href="tel:+998712345678">
+          📞 Qo'ng'iroq qilish — Maktab
+        </a>
+      </div>
+
+      <div class="contact-card">
+        <div class="contact-role">🚓 Yordamchi Xizmatlar</div>
+        <div class="contact-name">Bolalar huquqi bo'yicha inspektor</div>
+        <div class="contact-detail">📱 <a href="tel:102">102 — Militsiya</a></div>
+        <div class="contact-detail">📱 <a href="tel:1099">1099 — Yoshlar yordami</a></div>
+        <div class="contact-detail">📱 <a href="tel:109">109 — Ijtimoiy yordam</a></div>
+        <a class="call-btn" href="tel:102">📞 102 — Tezkor murojaat</a>
+      </div>
+
+      <!-- Timeline -->
+      <div class="i-lbl" style="margin:20px 0 14px;">📋 KEYINGI QADAMLAR</div>
+      <ul class="timeline" id="modalTimeline"></ul>
+
+    </div>
+  </div>
+</div>
+
+<!-- QAMOQ DETAIL MODAL -->
+<div class="modal-overlay" id="qamoqModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-header-icon" style="background:linear-gradient(135deg,rgba(108,52,131,0.3),rgba(108,52,131,0.1));border-color:rgba(108,52,131,0.5);">⛓️</div>
+      <div>
+        <div class="modal-title">Qamoq Jazosi — Batafsil</div>
+        <div class="modal-subtitle">O'zbekiston Jinoyat Kodeksi asosida</div>
+      </div>
+      <button class="modal-close-btn" onclick="closeQamoqModal()">✕ Yopish</button>
+    </div>
+    <div class="modal-body" id="qamoqModalBody"></div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="emblem-ring"><div class="emblem-icon">⚖️</div></div>
+    <h1 class="main-title">Huquqbuzarlikni Aniqlash<br>va Baholash Tizimi</h1>
+    <p class="main-sub">8-sinf BSB-2 · Tarbiya va Davlat Huquq Asoslari · 2026</p>
+  </div>
+
+  <!-- Progress Steps -->
+  <div class="progress-steps" id="progressSteps">
+    <div class="step active" id="step1">
+      <div class="step-circle">1</div>
+      <div class="step-lbl">Tanlash</div>
+    </div>
+    <div class="step" id="step2">
+      <div class="step-circle">2</div>
+      <div class="step-lbl">Tahlil</div>
+    </div>
+    <div class="step" id="step3">
+      <div class="step-circle">3</div>
+      <div class="step-lbl">Jazo</div>
+    </div>
+    <div class="step" id="step4">
+      <div class="step-circle">4</div>
+      <div class="step-lbl">Murojaat</div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-lbl">Huquqbuzarlik</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">8+</div>
+      <div class="stat-lbl">Qonun Moddasi</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num" id="totalFine">0</div>
+      <div class="stat-lbl">Max Jarima (mln)</div>
+    </div>
+  </div>
+
+  <!-- Vaziyat -->
+  <div class="vaziyat">
+    <div class="vaziyat-lbl">📋 Vaziyat — Aziz holati</div>
+    8-sinf o'quvchisi <strong>Aziz</strong> sinfdoshining yangi telefonini ruxsatsiz sumkasidan olib, tanalflus paytida shaxsiy videolarni ko'rdi va keyinchalik hech kimga sezdirmasdan stol tagiga qo'ydi. Sinfdoshi darsdan so'ng telefonini yo'qolgan deb o'yladi va o'qituvchiga murojaat qildi. <strong>Videokuzatuv orqali Azizning telefonni olgani aniq ma'lum bo'ldi.</strong> Aziz esa buni inkor etdi va yolg'on gapirdi.
+  </div>
+
+  <div class="divider"><div class="divider-txt">✦ HUQUQBUZARLIK TURINI TANLANG ✦</div></div>
+
+  <div class="section-h">📌 Qanday huquqbuzarlik sodir etildi?</div>
+
+  <!-- Violations -->
+  <div class="v-grid" id="vGrid"></div>
+
+  <!-- Result -->
+  <div id="resultWrap">
+    <!-- Header -->
+    <div class="r-top" id="rTop">
+      <div class="r-icon" id="rIcon"></div>
+      <div>
+        <div class="r-title" id="rTitle"></div>
+        <div class="r-tag" id="rTag"></div>
+      </div>
+    </div>
+
+    <!-- Info grid -->
+    <div class="info-grid" id="infoGrid">
+      <div class="info-cell">
+        <div class="i-lbl">📖 Konstitutsiya Moddasi</div>
+        <div class="i-val" id="rModda"></div>
+        <div class="i-sub" id="rKonst"></div>
+      </div>
+      <div class="info-cell">
+        <div class="i-lbl">⚖️ Jinoyat / Ma'muriy Kodeks</div>
+        <div class="i-val" id="rJuridik"></div>
+        <div class="i-sub" id="rIzoh"></div>
+      </div>
+      <div class="info-cell-full">
+        <div class="i-lbl">📊 Og'irlik Darajasi</div>
+        <div class="severity-bar" style="margin-top:8px;">
+          <div class="severity-fill" id="rSeverity" style="--s-from:#1a7a4a;--s-to:#c0392b;width:0%;"></div>
+        </div>
+        <div class="severity-labels"><span>Engil</span><span id="rSeverityLbl" style="color:var(--gold);font-weight:600;"></span><span>Juda Og'ir</span></div>
+      </div>
+    </div>
+
+    <!-- Penalty row -->
+    <div class="penalty-row">
+      <div class="jarima-cell">
+        <div class="i-lbl">💰 Jarima Miqdori</div>
+        <div class="penalty-amount" id="rJarima"></div>
+        <div class="i-sub" id="rJarimaSub"></div>
+      </div>
+      <div class="qamoq-cell">
+        <div class="i-lbl">⛓️ Qamoq Muddati</div>
+        <div class="qamoq-amount" id="rQamoq"></div>
+        <div class="i-sub" id="rQamoqSub"></div>
+      </div>
+    </div>
+
+    <!-- Law refs -->
+    <div class="law-refs">
+      <div class="i-lbl">📚 Qo'llanilgan Qonun Moddalari</div>
+      <div class="law-tags" id="rLawTags"></div>
+    </div>
+
+    <!-- PEE -->
+    <div class="pee-section" id="peeSection">
+      <div class="pee-lbl">✏️ PEE Modeli — Javob Yozish Namunasi</div>
+      <div class="pee-row"><span class="pee-key">P</span><span id="peeP"></span></div>
+      <div class="pee-row"><span class="pee-key">E</span><span id="peeE1"></span></div>
+      <div class="pee-row"><span class="pee-key">E</span><span id="peeE2"></span></div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-row">
+      <button class="act-btn act-btn-primary" onclick="openModal()">
+        📞 Ota-Onaga Murojaat
+      </button>
+      <button class="act-btn act-btn-secondary" onclick="openQamoqModal()">
+        ⛓️ Qamoq Batafsil
+      </button>
+      <button class="act-btn act-btn-ghost" onclick="resetAll()">
+        ↺ Qayta Boshlash
+      </button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>⚖️ O'ZBEKISTON RESPUBLIKASI KONSTITUTSIYASI ASOSIDA</p>
+    <p style="margin-top:6px;">8-sinf · Tarbiya va Davlat Huquq Asoslari Fani · 2026-yil</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const violations = [
+  {
+    id: 1,
+    emoji: "🚨",
+    name: "Birovning mulkini ruxsatsiz olish",
+    sub: "O'g'irlik — eng og'ir jinoyat",
+    color: "#c0392b",
+    severity: 90,
+    severityLbl: "JUDA OG'IR",
+    konstModda: "53-modda",
+    konstText: "Xususiy mulk daxlsiz va davlat tomonidan himoyalanadi. Hech kim qonunga asoslanmagan holda mulkidan mahrum etilishi mumkin emas.",
+    juridik: "Jinoyat Kodeksi — 168-modda",
+    izoh: "Aziz sinfdoshining telefonini sumkasidan ruxsatsiz oldi. Bu to'g'ridan-to'g'ri o'g'irlik (hiyonat) hisoblanadi.",
+    jarima: "5 — 10 mln so'm",
+    jarimaSub: "Bazaviy hisoblash miqdorining 50–100 baravari",
+    qamoq: "2 — 5 yil",
+    qamoqSub: "Og'irlashtiruvchi holatda 7 yilgacha",
+    prisonYears: "2–5",
+    prisonMin: 2, prisonMax: 5,
+    laws: ["Konstitutsiya 53-modda","JK 168-modda","JK 25-modda","MJK 56-modda"],
+    pP: "Aziz sinfdoshining mulkiga (telefoniga) ruxsatsiz tajovuz qilib, uni sumkasidan oldi — bu huquqbuzarlik hisoblanadi.",
+    pE1: "O'zbekiston Konstitutsiyasining 53-moddasiga ko'ra, xususiy mulk daxlsiz va davlat tomonidan himoyalanadi.",
+    pE2: "Shuning uchun Aziz o'z xatosini tan olishi, kechirim so'rashi va qaytarmaslik majburiyatini olishi; ota-onasi esa moddiy javobgarlikni bo'yniga olishi lozim.",
+    parentName: "Azizov Baxtiyor Karimovich",
+    parentPhone: "+998901234567",
+    parentPhoneView: "+998 90 123-45-67",
+    parentAddr: "Toshkent sh., Chilonzor tumani, 12-uy, 34-kvartira",
+    timeline: [
+      {t:"Darhol", d:"Ota-onani telefon orqali xabardor qiling"},
+      {t:"1 soat ichida", d:"Maktab direktoriga rasmiy xabar bering"},
+      {t:"Bugun", d:"Qurbonning telefonini qaytarib oling"},
+      {t:"Ertaga", d:"Sinf yig'ilishi o'tkazing, vaziyatni muhokama qiling"},
+      {t:"1 hafta", d:"Psixolog bilan suhbat tashkil eting"},
+    ],
+    notifs: [
+      {type:"danger", icon:"🚨", title:"JINOYAT ANIQLANDI!", msg:"O'g'irlik — Jinoyat Kodeksi 168-modda. Qamoq: 2-5 yil!"},
+      {type:"warning", icon:"⚠️", title:"Ota-Onaga Xabar Bering", msg:"Aziz Azizovning ota-onasi darhol chaqirilishi shart!"},
+    ]
+  },
+  {
+    id: 2,
+    emoji: "🔒",
+    name: "Shaxsiy maxfiylikni buzish",
+    sub: "Boshqaning shaxsiy videolarini ko'rish",
+    color: "#d35400",
+    severity: 70,
+    severityLbl: "OG'IR",
+    konstModda: "27-modda",
+    konstText: "Har kim o'z shaxsiy va oilaviy sirini saqlash huquqiga ega. Shaxsiy ma'lumotlar va aloqa vositalari orqali almashiladigan ma'lumotlar qonun bilan muhofaza etiladi.",
+    juridik: "Jinoyat Kodeksi — 141-modda",
+    izoh: "Aziz boshqaning shaxsiy videolarini ruxsatsiz tomosha qildi — bu shaxsiy hayot daxlsizligini ochiq buzishdir.",
+    jarima: "2 — 5 mln so'm",
+    jarimaSub: "Bazaviy hisoblash miqdorining 20–50 baravari",
+    qamoq: "1 — 3 yil",
+    qamoqSub: "Yoki axloq tuzatish ishlari 1 yilgacha",
+    prisonYears: "1–3",
+    prisonMin: 1, prisonMax: 3,
+    laws: ["Konstitutsiya 27-modda","JK 141-modda","Axborot to'g'risida Qonun 22-modda","MJK 46-modda"],
+    pP: "Aziz sinfdoshining telefonidagi shaxsiy videolarini ruxsatsiz ko'rdi — bu maxfiylik huquqini buzdi.",
+    pE1: "O'zbekiston Konstitutsiyasining 27-moddasiga ko'ra, har bir shaxsning shaxsiy hayoti, ma'lumotlari va maxfiylik huquqi davlat tomonidan himoyalanadi.",
+    pE2: "Bu harakatlar boshqa shaxsning qadr-qimmatini kamsitishi mumkin, shuning uchun Aziz kechirim so'rab, bunday aralashmaslik majburiyatini olishi kerak.",
+    parentName: "Azizov Baxtiyor Karimovich",
+    parentPhone: "+998901234567",
+    parentPhoneView: "+998 90 123-45-67",
+    parentAddr: "Toshkent sh., Chilonzor tumani, 12-uy, 34-kvartira",
+    timeline: [
+      {t:"Darhol", d:"Ota-onani xabardor qiling va murojaat uchun chaqiring"},
+      {t:"Bugun", d:"Maktab psixologi bilan suhbat tashkil eting"},
+      {t:"Bu hafta", d:"Qurbonning ota-onasi bilan uchrashuv o'tkazing"},
+      {t:"1 oy", d:"Shaxsiy ma'lumotlar muhofazasi bo'yicha dars o'tkazing"},
+    ],
+    notifs: [
+      {type:"warning", icon:"🔒", title:"MAXFIYLIK BUZILDI", msg:"Konstitutsiya 27-modda buzildi. Shaxsiy ma'lumotlarga noqonuniy kirish!"},
+      {type:"info", icon:"📋", title:"Hujjatlashtiring", msg:"Videokuzatuv yozuvlari dalil sifatida saqlanishi kerak."},
+    ]
+  },
+  {
+    id: 3,
+    emoji: "📱",
+    name: "Birovning mulkini ruxsatsiz ishlatish",
+    sub: "Telefondan egasi ruxsatisiz foydalanish",
+    color: "#b7950b",
+    severity: 45,
+    severityLbl: "O'RTA",
+    konstModda: "54-modda",
+    konstText: "Mulkdor mulkiga o'z xohishicha egalik qiladi, undan foydalanadi va tasarruf etadi. Boshqa shaxsning mulkini uning ruxsatisiz ishlatish qonunga ziddir.",
+    juridik: "Ma'muriy Javobgarlik Kodeksi — 56-modda",
+    izoh: "Aziz sinfdoshining telefonini egasining ruxsatisiz ishlatdi — bu mulkdan noqonuniy foydalanishdir.",
+    jarima: "500 ming — 2 mln so'm",
+    jarimaSub: "Bazaviy hisoblash miqdorining 5–20 baravari",
+    qamoq: "15 kun",
+    qamoqSub: "Ma'muriy hibsga olish yoki jarima",
+    prisonYears: "15 kun",
+    prisonMin: 0, prisonMax: 0.04,
+    laws: ["Konstitutsiya 54-modda","MJK 56-modda","Fuqarolik Kodeksi 184-modda"],
+    pP: "Aziz sinfdoshining telefonini egasining ruxsatisiz olib ishlatdi — bu mulk huquqini buzgan.",
+    pE1: "O'zbekiston Konstitutsiyasining 54-moddasiga ko'ra, har bir shaxs o'z mulkiga to'liq huquqqa ega va boshqalar uning mulkini ruxsatsiz ishlata olmaydi.",
+    pE2: "Shuning uchun Aziz ushbu harakati uchun javob berishi va boshqalar mulkini hurmat qilishni o'rganishi lozim.",
+    parentName: "Azizov Baxtiyor Karimovich",
+    parentPhone: "+998901234567",
+    parentPhoneView: "+998 90 123-45-67",
+    parentAddr: "Toshkent sh., Chilonzor tumani, 12-uy, 34-kvartira",
+    timeline: [
+      {t:"Bugun", d:"Ota-onani xabardor qiling (ixtiyoriy, ammo tavsiya etiladi)"},
+      {t:"Bu hafta", d:"Sinf o'qituvchisi bilan suhbat o'tkazing"},
+      {t:"1 oy", d:"Mulk huquqlari bo'yicha tarbiyaviy suhbat"},
+    ],
+    notifs: [
+      {type:"warning", icon:"📱", title:"Mulk Huquqi Buzildi", msg:"Konstitutsiya 54-modda. Ma'muriy jarima: 500 ming – 2 mln so'm."},
+    ]
+  },
+  {
+    id: 4,
+    emoji: "🤥",
+    name: "Yolg'on aytish va voqeani inkor etish",
+    sub: "Halollik va vijdon normalarini ochiq buzish",
+    color: "#6c3483",
+    severity: 60,
+    severityLbl: "MUHIM",
+    konstModda: "29-modda + Axloq Normalari",
+    konstText: "Har kim o'z fikrini erkin bildirish huquqiga ega, biroq boshqalarga zarar etkazuvchi yolg'on ma'lumot tarqatish axloqiy va huquqiy javobgarlikni keltirib chiqaradi.",
+    juridik: "Maktab Nizomi + Jinoyat Kodeksi 238-modda",
+    izoh: "Aziz videokuzatuv bilan isbotlangan holda ham harakatini inkor etdi — bu halollik prinsipini ochiq buzdi va jazo miqdorini oshirdi.",
+    jarima: "Intizomiy jazo",
+    jarimaSub: "Hayfsan, ota-onani chaqirtirish, sinf yig'ilishi",
+    qamoq: "6 oygacha",
+    qamoqSub: "Yolg'on ko'rsatuv uchun (kattalar uchun 2 yilgacha)",
+    prisonYears: "6 oy",
+    prisonMin: 0, prisonMax: 0.5,
+    laws: ["Konstitutsiya 29-modda","JK 238-modda","Maktab Nizomi 15-band","Axloq Kodeksi"],
+    pP: "Aziz o'z huquqbuzarligini tan olmay, yolg'on ma'lumot berdi — bu muammoni yanada og'irlashtirdi.",
+    pE1: "O'zbekiston Konstitutsiyasining 29-moddasiga ko'ra, fikr erkinligi boshqalarga zarar etkazmaslik sharti bilan himoyalanadi; yolg'on inkor axloqiy normalarni buzadi.",
+    pE2: "Halollik — insonning eng muhim fazilati. Aziz haqiqatni tan olib, kechirim so'rashi va bunday xatolarni qaytarmaslik majburiyatini olishi kerak.",
+    parentName: "Azizov Baxtiyor Karimovich",
+    parentPhone: "+998901234567",
+    parentPhoneView: "+998 90 123-45-67",
+    parentAddr: "Toshkent sh., Chilonzor tumani, 12-uy, 34-kvartira",
+    timeline: [
+      {t:"Darhol", d:"Ota-onani xabardor qiling — vaziyatni tushuntiring"},
+      {t:"Bugun", d:"Aziz bilan tarbiyaviy suhbat o'tkazing"},
+      {t:"Bu hafta", d:"Sinf oldida kechirim so'rashni talab qiling"},
+      {t:"1 oy", d:"Halollik va mas'uliyat mavzusida dars o'tkazing"},
+    ],
+    notifs: [
+      {type:"warning", icon:"🤥", title:"Yolg'on Aniqlandi!", msg:"Aziz videokuzatuv isboti bo'lsa ham inkor etdi. JK 238-modda."},
+      {type:"info", icon:"📋", title:"Barcha Dalillarni Saqlang", msg:"Videokuzatuv yozuvlari va guvohlar ko'rsatuvlari rasmiy hujjatlashtirilsin."},
+    ]
+  }
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let current = null;
+let notifCount = 0;
+
+/* ============================================================
+   NOTIFICATIONS
+============================================================ */
+function showNotif(type, icon, title, msg, delay=0) {
+  setTimeout(() => {
+    const id = 'notif_' + (++notifCount);
+    const el = document.createElement('div');
+    el.className = `notif ${type}`;
+    el.id = id;
+    el.innerHTML = `
+      <div class="notif-icon">${icon}</div>
+      <div style="flex:1;">
+        <div class="notif-title">${title}</div>
+        <div class="notif-msg">${msg}</div>
+      </div>
+      <button class="notif-close" onclick="closeNotif('${id}')">✕</button>
+      <div class="notif-bar"></div>
+    `;
+    document.getElementById('notif-container').appendChild(el);
+    requestAnimationFrame(() => { setTimeout(()=>el.classList.add('show'), 50); });
+    setTimeout(() => closeNotif(id), 4500);
+  }, delay);
+}
+
+function closeNotif(id) {
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('show');
+  el.classList.add('hide');
+  setTimeout(() => el.remove(), 400);
+}
+
+/* ============================================================
+   RENDER VIOLATIONS
+============================================================ */
+function renderViolations() {
+  const dots = [1,2,3,4,5];
+  document.getElementById('vGrid').innerHTML = violations.map(v => {
+    const filled = Math.round(v.severity / 20);
+    return `
+    <div class="v-card ${current===v.id?'active':''}" style="--vc:${v.color};" onclick="selectV(${v.id})">
+      <div class="v-emoji" style="background:${v.color};">${v.emoji}</div>
+      <div class="v-info">
+        <div class="v-name">${v.name}</div>
+        <div class="v-sub">${v.sub}</div>
+      </div>
+      <div class="v-severity">
+        <div class="severity-dots">
+          ${dots.map((_,i)=>`<div class="dot${i<filled?' on':''}"></div>`).join('')}
+        </div>
+      </div>
+      ${current===v.id ? '<div class="v-check">✓</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+/* ============================================================
+   SELECT VIOLATION
+============================================================ */
+function selectV(id) {
+  current = id;
+  const v = violations.find(x => x.id === id);
+  renderViolations();
+  showResult(v);
+  updateSteps(2);
+  // show notifs
+  v.notifs.forEach((n, i) => showNotif(n.type, n.icon, n.title, n.msg, i * 600));
+  setTimeout(() => {
+    document.getElementById('resultWrap').scrollIntoView({behavior:'smooth', block:'start'});
+  }, 150);
+}
+
+/* ============================================================
+   SHOW RESULT
+============================================================ */
+function showResult(v) {
+  const wrap = document.getElementById('resultWrap');
+  wrap.classList.remove('show');
+  void wrap.offsetWidth;
+
+  // top
+  const color = v.color;
+  document.getElementById('rTop').style.cssText = `--r-color:${color};`;
+  document.getElementById('rIcon').textContent = v.emoji;
+  document.getElementById('rIcon').style.background = color;
+  document.getElementById('rTitle').textContent = v.name;
+  document.getElementById('rTitle').style.color = v.color;
+  document.getElementById('rTag').textContent = v.sub;
+
+  // set color vars on sub-elements
+  ['infoGrid','peeSection'].forEach(id => {
+    document.getElementById(id).style.cssText = `--r-color:${color};`;
+  });
+  document.querySelectorAll('.law-refs,.penalty-row,.action-row').forEach(el => {
+    el.style.cssText = `--r-color:${color};`;
+  });
+
+  // info
+  document.getElementById('rModda').textContent = v.konstModda;
+  document.getElementById('rKonst').textContent = `"${v.konstText}"`;
+  document.getElementById('rJuridik').textContent = v.juridik;
+  document.getElementById('rIzoh').textContent = v.izoh;
+
+  // severity
+  const sev = document.getElementById('rSeverity');
+  sev.style.width = '0%';
+  setTimeout(() => { sev.style.width = v.severity + '%'; }, 100);
+  document.getElementById('rSeverityLbl').textContent = v.severityLbl;
+
+  // penalty
+  document.getElementById('rJarima').textContent = v.jarima;
+  document.getElementById('rJarimaSub').textContent = v.jarimaSub;
+  document.getElementById('rQamoq').textContent = v.qamoq;
+  document.getElementById('rQamoqSub').textContent = v.qamoqSub;
+
+  // laws
+  document.getElementById('rLawTags').innerHTML = v.laws.map(l => `<div class="law-tag">${l}</div>`).join('');
+
+  // PEE
+  document.getElementById('peeP').textContent = v.pP;
+  document.getElementById('peeE1').textContent = v.pE1;
+  document.getElementById('peeE2').textContent = v.pE2;
+
+  wrap.classList.add('show');
+  updateSteps(3);
+}
+
+/* ============================================================
+   MODALS
+============================================================ */
+function openModal() {
+  if(!current) return;
+  const v = violations.find(x => x.id === current);
+
+  document.getElementById('modalSubtitle').textContent = `${v.name} — ota-onaga darhol xabar bering`;
+
+  // severity
+  const fill = document.getElementById('modalSeverityFill');
+  fill.style.width = '0%';
+  setTimeout(() => { fill.style.width = v.severity + '%'; }, 200);
+  document.getElementById('modalSeverityText').textContent = v.severityLbl;
+
+  // prison
+  document.getElementById('prisonYears').textContent = v.prisonYears;
+  document.getElementById('prisonRange').textContent = `Minimal: ${v.prisonMin} yil · Maksimal: ${v.prisonMax >= 1 ? v.prisonMax + ' yil' : v.prisonMax === 0.04 ? '15 kun' : '6 oy'}`;
+
+  // parent contact
+  document.getElementById('parentName').textContent = v.parentName;
+  document.getElementById('parentPhone').textContent = v.parentPhoneView;
+  document.getElementById('parentPhone').href = `tel:${v.parentPhone}`;
+  document.getElementById('parentAddr').textContent = v.parentAddr;
+  document.getElementById('parentCallLink').href = `tel:${v.parentPhone}`;
+  document.getElementById('parentCallLink').textContent = `📞 Qo'ng'iroq qilish — ${v.parentName.split(' ')[0]}`;
+
+  // timeline
+  document.getElementById('modalTimeline').innerHTML = v.timeline.map(t => `
+    <li class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-title">${t.t}</div>
+      <div class="tl-text">${t.d}</div>
+    </li>
+  `).join('');
+
+  document.getElementById('otaOnaModal').classList.add('open');
+  updateSteps(4);
+  showNotif('info','📞','Ota-Onaga Murojaat','Kontakt ma\'lumotlari ko\'rsatildi. Darhol qo\'ng\'iroq qiling!');
+}
+
+function closeModal() {
+  document.getElementById('otaOnaModal').classList.remove('open');
+}
+
+function openQamoqModal() {
+  if(!current) return;
+  const v = violations.find(x => x.id === current);
+  document.getElementById('qamoqModalBody').innerHTML = `
+    <div class="prison-display" style="margin-bottom:20px;">
+      <div class="i-lbl" style="color:rgba(231,76,60,0.7);margin-bottom:12px;">⛓️ RASMIY QAMOQ JAZOSI</div>
+      <div class="prison-years">${v.prisonYears}</div>
+      <div class="prison-unit">QAMOQ MUDDATI</div>
+      <div class="prison-range">${v.qamoqSub}</div>
+    </div>
+    <div style="display:grid;gap:14px;">
+      <div class="info-cell" style="border:1px solid var(--border);border-radius:10px;">
+        <div class="i-lbl">⚖️ Qo'llanilgan Modda</div>
+        <div class="i-val">${v.juridik}</div>
+        <div class="i-sub">${v.izoh}</div>
+      </div>
+      <div class="info-cell" style="border:1px solid rgba(192,57,43,0.3);border-radius:10px;background:rgba(192,57,43,0.05);">
+        <div class="i-lbl">📋 Jazo Turlari</div>
+        <div style="font-size:14px;line-height:1.8;color:#c0b8a8;margin-top:6px;">
+          ${v.id === 1 ? `• Asosiy jazo: 2 yildan 5 yilgacha qamoq<br>• Og'irlashtiruvchi holat (guruh bilan): 5–7 yil<br>• Katta miqdordagi o'g'irlik: 7–10 yil<br>• Voyaga yetmaganlar: tuzatish muassasasiga<br>• Jarima: 5–10 mln so'm + tovon to'lash` :
+           v.id === 2 ? `• Asosiy jazo: 1 yildan 3 yilgacha qamoq<br>• Yoki axloq tuzatish ishlari: 1 yilgacha<br>• Shaxsiy ma'lumotlarni tarqatish: +2 yil<br>• Voyaga yetmaganlar: tuzatish muassasasiga<br>• Jarima: 2–5 mln so'm` :
+           v.id === 3 ? `• Ma'muriy hibsga olish: 15 kungacha<br>• Jarima: 500 ming – 2 mln so'm<br>• Ogohlantirish yozuvi<br>• Takroriy holat: jazo ikki baravar oshadi` :
+           `• Yolg'on ko'rsatuv: 6 oygacha qamoq<br>• Kattalar uchun: 2 yilgacha qamoq<br>• Maktab intizomiy jazosi: hayfsan<br>• Ota-ona javobgarligi: 500 ming so'm`}
+        </div>
+      </div>
+      <div class="info-cell" style="border:1px solid rgba(26,122,74,0.3);border-radius:10px;background:rgba(26,122,74,0.05);">
+        <div class="i-lbl">✅ Voyaga Yetmaganlar Uchun Imtiyoz</div>
+        <div style="font-size:13px;color:#a0d8b0;line-height:1.7;margin-top:6px;">
+          14–18 yoshlilar uchun jazo kamaytiriladi:<br>
+          • Qamoq o'rniga tuzatish muassasasiga yuborish<br>
+          • Ota-ona nazoratiga berish<br>
+          • Psixolog va ijtimoiy xodim ishlashi<br>
+          • Birinchi marta qilgan bo'lsa — ogohlantirishga cheklanishi mumkin
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('qamoqModal').classList.add('open');
+  showNotif('danger','⛓️','Qamoq Ma\'lumotlari','Rasmiy jazo miqdori va shartlari ko\'rsatildi.');
+}
+
+function closeQamoqModal() {
+  document.getElementById('qamoqModal').classList.remove('open');
+}
+
+/* ============================================================
+   STEPS
+============================================================ */
+function updateSteps(activeStep) {
+  for(let i=1;i<=4;i++){
+    const el = document.getElementById(`step${i}`);
+    el.classList.remove('active','done');
+    if(i < activeStep) el.classList.add('done');
+    if(i === activeStep) el.classList.add('active');
+  }
+}
+
+/* ============================================================
+   RESET
+============================================================ */
+function resetAll() {
+  current = null;
+  renderViolations();
+  document.getElementById('resultWrap').classList.remove('show');
+  updateSteps(1);
+  document.querySelector('.header').scrollIntoView({behavior:'smooth'});
+  showNotif('success','↺','Qayta Boshlandi','Yangi huquqbuzarlikni tanlashingiz mumkin.');
+}
+
+/* ============================================================
+   CLOSE MODALS ON OVERLAY CLICK
+============================================================ */
+document.getElementById('otaOnaModal').addEventListener('click', function(e){
+  if(e.target === this) closeModal();
+});
+document.getElementById('qamoqModal').addEventListener('click', function(e){
+  if(e.target === this) closeQamoqModal();
+});
+
+/* ============================================================
+   INIT
+============================================================ */
+renderViolations();
+
+// Welcome notif
+setTimeout(() => {
+  showNotif('info','⚖️','Tizim Tayyor','Huquqbuzarlik turini tanlang va natijani ko\'ring!');
+}, 800);
+
+// Animate stats counter
+function animateNum(el, target, suffix='') {
+  let cur = 0;
+  const step = target / 30;
+  const t = setInterval(() => {
+    cur += step;
+    if(cur >= target){ cur = target; clearInterval(t); }
+    el.textContent = Math.round(cur) + suffix;
+  }, 40);
+}
+window.addEventListener('load', () => {
+  animateNum(document.getElementById('totalFine'), 10, 'M+');
+});
+</script>
+</body>
+</html>
